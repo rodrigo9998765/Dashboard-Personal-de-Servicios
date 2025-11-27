@@ -1,0 +1,89 @@
+services:
+  # 1. EL DASHBOARD (Homer)
+  homer:
+    image: b4bz/homer
+    container_name: homer-dashboard
+    volumes:
+      - ./configs/homer-config:/www/assets
+    ports:
+      - "8080:8080"
+    user: "1000:1000" # Importante en Podman rootless
+    environment:
+      - INIT_ASSETS=1
+    networks:
+      - mi_red_privada
+      
+# 2. GESTIÓN DE CONTENEDORES (Portainer Agent)
+  agent:
+    image: portainer/agent:latest
+    container_name: portainer_agent
+    volumes:
+      # Mapea el socket, pero solo para que el agent pueda leerlo.
+      # Esta ruta es la que el Portainer Agent DEBE ver dentro de la máquina Linux.
+      - /run/user/1000/podman/podman.sock:/var/run/docker.sock:Z
+      - /:/host:ro
+    networks:
+      - mi_red_privada
+    restart: always
+    
+# 3. GESTIÓN DE CONTENEDORES (Portainer)
+  portainer:
+    image: portainer/portainer-ce:latest
+    container_name: portainer
+    command: -H tcp://agent:9001 --tlsskipverify
+    volumes:
+      - portainer_data:/data
+    
+    ports:
+      - "9000:9000"
+    networks:
+      - mi_red_privada
+
+# 4. Entorno de Desarrollo
+  code-server:
+    image: codercom/code-server:latest
+    container_name: code-server
+    volumes:
+      # Donde se guardarán tus archivos de configuración/proyectos
+      - code_server_data:/home/coder/project:Z
+    ports:
+      - "8082:8080" # Mapeamos el puerto 8082 del Host al puerto 8080 del contenedor
+    environment:
+      # ¡IMPORTANTE! Define una contraseña. La necesitarás para entrar.
+      - PASSWORD=MiClaveSecreta1234
+    restart: always
+    networks:
+      - mi_red_privada
+
+ # 5. mariadb
+  mariadb:
+   image: mariadb:latest
+   container_name: mariadb-container
+   volumes:
+      - ./containerfiles/mariadb:/var/lib/mysql
+   environment:
+      - MARIADB_ROOT_PASSWORD=sistemasoperativos
+      - MARIADB_DATABASE=Sample
+   ports:
+      - "3306:3306"
+   networks:
+      - mi_red_privada
+ # 6. phpmyadmin
+  phpmyadmin:
+   image: phpmyadmin
+   container_name: phpmyadmin-container
+   ports:
+       - "8088:80"
+   environment:
+       - PMA_HOST=mariadb-container #nombre de contenedor de mariadb
+       - MYSQL_ROOT_PASSWORD=sistemasoperativos
+   depends_on:
+       - mariadb #nombre del servicio
+   networks:
+       - mi_red_privada
+volumes:
+  portainer_data:
+  code_server_data:
+networks:
+  mi_red_privada:
+    driver: bridge

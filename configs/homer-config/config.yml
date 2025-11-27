@@ -1,0 +1,34 @@
+title: "Mi Dashboard Universitario"
+subtitle: "Orquestación con Podman"
+logo: "logo.png"
+
+header: true
+footer: '<p>Creado con Podman & Homer</p>'
+
+services:
+  - name: "Infraestructura"
+    icon: "fas fa-server"
+    items:
+      - name: "Portainer"
+        logo: "assets/tools/portainer.png"
+        subtitle: "Gestión de Contenedores"
+        tag: "sysadmin"
+        url: "http://localhost:9000" # Acceso externo
+        target: "_blank" 
+
+  - name: "Aplicaciones"
+    icon: "fas fa-cloud"
+    items:
+    
+      - name: "Code Server"
+        logo: "assets/tools/vscode.png" # Si no tienes la imagen, usará la genérica
+        subtitle: "VS Code en el Navegador"
+        tag: "dev"
+        url: "http://localhost:8082" 
+        target: "_blank"
+      
+      - name: "Mariadb"
+        logo: "assets/tools/filebrowser.png"
+        subtitle: "Base de datos"
+        url: "http://localhost:8088"
+        target: "_blank"
